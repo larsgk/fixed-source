@@ -1,5 +1,7 @@
 # Broadcast Audio Fixed Source
-This is a small PoC of how a [Broadcast Audio URI](https://www.bluetooth.com/specifications/specs/broadcast-audio-uri-2/) can be used to expose a dynamically generated QR code on an nRF5340 Audio DK with an Adafruit 2.8" TFT shield attached.
+This is a small application that creates a single channel continuous loop Broadcast Audio Source, using pre-encoded audio, stored with the application in flash.
+
+Using 16 KHz mono and an nRF52840 Dongle (with 1 MB flash), it's possible to store just below 3 minutes of pre-encoded audio, which will be broadcasted in a continuous loop.
 
 The application is a slightly modified version of the [BAP Broadcast Source sample](https://github.com/zephyrproject-rtos/zephyr/tree/main/samples/bluetooth/bap_broadcast_source).
 
