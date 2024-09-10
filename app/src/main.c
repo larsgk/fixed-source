@@ -42,7 +42,7 @@ BUILD_ASSERT(CONFIG_BT_ISO_TX_BUF_COUNT >= TOTAL_BUF_NEEDED,
 #if defined(CONFIG_BAP_BROADCAST_16_2_1)
 
 static struct bt_bap_lc3_preset preset_active = BT_BAP_LC3_BROADCAST_PRESET_16_2_1(
-	BT_AUDIO_LOCATION_FRONT_LEFT,
+	BT_AUDIO_LOCATION_MONO_AUDIO,
 	BT_AUDIO_CONTEXT_TYPE_UNSPECIFIED);
 
 #define BT_AUDIO_BROADCAST_NAME "16Khz Stream"
@@ -54,7 +54,7 @@ static const uint8_t lc3_music[] = {
 #elif defined(CONFIG_BAP_BROADCAST_24_2_1)
 
 static struct bt_bap_lc3_preset preset_active = BT_BAP_LC3_BROADCAST_PRESET_24_2_1(
-	BT_AUDIO_LOCATION_FRONT_LEFT,
+	BT_AUDIO_LOCATION_MONO_AUDIO,
 	BT_AUDIO_CONTEXT_TYPE_UNSPECIFIED);
 
 #define BT_AUDIO_BROADCAST_NAME "24Khz Stream"
@@ -247,17 +247,18 @@ static int setup_broadcast_source(struct bt_bap_broadcast_source **source)
 	struct bt_bap_broadcast_source_stream_param stream_params;
 	struct bt_bap_broadcast_source_subgroup_param subgroup_param;
 	struct bt_bap_broadcast_source_param create_param = {0};
-	uint8_t mono[] = {BT_AUDIO_CODEC_DATA(BT_AUDIO_CODEC_CFG_CHAN_ALLOC,
-			  BT_BYTES_LIST_LE32(BT_AUDIO_LOCATION_MONO_AUDIO))};
 	int err;
 
 	subgroup_param.params_count = 1;
 	subgroup_param.params = &stream_params;
 	subgroup_param.codec_cfg = &preset_active.codec_cfg;
 
+	/* MONO is implicit if omitted */
+	bt_audio_codec_cfg_unset_val(subgroup_param.codec_cfg, BT_AUDIO_CODEC_CFG_CHAN_ALLOC);
+
 	stream_params.stream = &streams[0].stream;
-	stream_params.data = mono;
-	stream_params.data_len = sizeof(mono);
+	stream_params.data = NULL;
+	stream_params.data_len = 0;
 	bt_bap_stream_cb_register(stream_params.stream, &stream_ops);
 
 	create_param.params_count = 1;
