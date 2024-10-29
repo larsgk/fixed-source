@@ -27,7 +27,7 @@ BUILD_ASSERT(strlen(CONFIG_BROADCAST_CODE) <= BT_AUDIO_BROADCAST_CODE_SIZE,
  * interval.
  */
 #define BT_LE_EXT_ADV_CUSTOM                                                                       \
-	BT_LE_ADV_PARAM(BT_LE_ADV_OPT_EXT_ADV, 0x0080, 0x0080, NULL)
+	BT_LE_ADV_PARAM(BT_LE_ADV_OPT_EXT_ADV | BT_LE_ADV_OPT_USE_IDENTITY, 0x0080, 0x0080, NULL)
 
 /* When BROADCAST_ENQUEUE_COUNT > 1 we can enqueue enough buffers to ensure that
  * the controller is never idle
