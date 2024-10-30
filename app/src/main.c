@@ -10,8 +10,8 @@
 #include <zephyr/bluetooth/audio/audio.h>
 #include <zephyr/bluetooth/audio/bap.h>
 #include <zephyr/bluetooth/audio/bap_lc3_preset.h>
-
-// #include "lc3util.h"
+#include <zephyr/drivers/hwinfo.h>
+#include <zephyr/sys/base64.h>
 
 BUILD_ASSERT(strlen(CONFIG_BROADCAST_CODE) <= BT_AUDIO_BROADCAST_CODE_SIZE,
 	     "Invalid broadcast code");
@@ -276,10 +276,33 @@ static int setup_broadcast_source(struct bt_bap_broadcast_source **source)
 	return 0;
 }
 
+void print_broadcast_audio_uri(const bt_addr_t *addr, uint32_t broadcast_id, uint8_t *name, uint8_t sid)
+{
+	uint8_t addr_str[13];
+	uint8_t name_base64[128];
+	size_t name_base64_len;
+
+	/* Address */
+	snprintk(addr_str, sizeof(addr_str), "%02X%02X%02X%02X%02X%02X",
+		 addr->val[5], addr->val[4], addr->val[3],
+		 addr->val[2], addr->val[1], addr->val[0]);
+
+	/* Name */
+	base64_encode(name_base64, sizeof(name_base64), &name_base64_len, name, strlen(name));
+	name_base64[name_base64_len + 1] = 0;
+
+	/* Most fields hard coded for this demo */
+	printk("Broadcast Audio URI string:\n");
+	printk("\"BLUETOOTH:UUID:184F;BN:%s;SQ:1;AT:0;AD:%s;AS:%u;BI:%06X;PI:FFFF;NS:1;BS:1;;\"\n",
+		 name_base64, addr_str, sid, broadcast_id);
+}
+
 int main(void)
 {
 	struct bt_le_ext_adv *adv;
 	int err;
+	uint8_t hwid[3];
+	struct bt_le_ext_adv_info advInfo;
 
 	int frame_us;
 	int srate_hz;
@@ -343,10 +366,15 @@ int main(void)
 		return 0;
 	}
 
-	err = bt_bap_broadcast_source_get_id(broadcast_source, &broadcast_id);
-	if (err != 0) {
-		printk("Unable to get broadcast ID: %d\n", err);
-		return 0;
+	/**
+	 * Use 3 bytes from the hwid, to make Broadcast ID static but
+	 * 'unique' per device.
+	 */
+	ret = hwinfo_get_device_id(hwid, sizeof(hwid));
+	if (ret == sizeof(hwid)) {
+		memcpy(&broadcast_id, hwid, sizeof(hwid));
+	} else {
+		broadcast_id = 0xDEADBF; // Fallback
 	}
 
 	/* Setup extended advertising data */
@@ -398,6 +426,10 @@ int main(void)
 			err);
 		return 0;
 	}
+
+	/* Print Broadcast Audio URI to log */
+	bt_le_ext_adv_get_info(adv, &advInfo);
+	print_broadcast_audio_uri(&advInfo.addr->a, broadcast_id, BT_AUDIO_BROADCAST_NAME, 0);
 
 	printk("Starting broadcast source\n");
 	err = bt_bap_broadcast_source_start(broadcast_source, adv);
