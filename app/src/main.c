@@ -295,7 +295,7 @@ void print_broadcast_audio_uri(const bt_addr_t *addr, uint32_t broadcast_id, uin
 
 	/* Most fields hard coded for this demo */
 	printk("Broadcast Audio URI string:\n");
-	printk("\"BLUETOOTH:UUID:184F;BN:%s;SQ:1;AT:0;AD:%s;AS:%u;BI:%06X;PI:FFFF;NS:1;BS:1;;\"\n",
+	printk("\"BLUETOOTH:UUID:184F;BN:%s;SQ:1;AT:1;AD:%s;AS:%u;BI:%06X;PI:FFFF;NS:1;BS:1;;\"\n",
 		 name_base64, addr_str, sid, broadcast_id);
 }
 
