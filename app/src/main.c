@@ -299,6 +299,22 @@ void print_broadcast_audio_uri(const bt_addr_t *addr, uint32_t broadcast_id, uin
 		 name_base64, addr_str, sid, broadcast_id);
 }
 
+/**
+ *  Note: The following defines are present in a newer version of Zephyr than currently used
+ *        and can be removed if the Zephyr version is upgraded for the application.
+ */
+#ifndef BT_GAP_MS_TO_PER_ADV_INTERVAL
+#define BT_GAP_US_TO_PER_ADV_INTERVAL(_interval) ((uint16_t)((_interval) / 1250U))
+#define BT_GAP_MS_TO_PER_ADV_INTERVAL(_interval)                                                   \
+	(BT_GAP_US_TO_PER_ADV_INTERVAL((_interval) * USEC_PER_MSEC))
+#endif
+
+#ifndef BT_BAP_PER_ADV_PARAM_BROADCAST_FAST
+#define BT_BAP_PER_ADV_PARAM_BROADCAST_FAST                                                        \
+	BT_LE_PER_ADV_PARAM(BT_GAP_MS_TO_PER_ADV_INTERVAL(60), BT_GAP_MS_TO_PER_ADV_INTERVAL(60),  \
+			    BT_LE_PER_ADV_OPT_NONE)
+#endif
+
 int main(void)
 {
 	struct bt_le_ext_adv *adv;
@@ -365,7 +381,7 @@ int main(void)
 	}
 
 	/* Set periodic advertising parameters */
-	err = bt_le_per_adv_set_param(adv, BT_LE_PER_ADV_DEFAULT);
+	err = bt_le_per_adv_set_param(adv, BT_BAP_PER_ADV_PARAM_BROADCAST_FAST);
 	if (err) {
 		printk("Failed to set periodic advertising parameters"
 		" (err %d)\n", err);
